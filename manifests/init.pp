@@ -95,6 +95,7 @@ class sudo(
   $extra_include_dirs  = undef,
   $content             = $sudo::params::content,
   $ldap_enable         = false,
+  $global_syntax_check = 'check',
 ) inherits sudo::params {
 
 
@@ -125,6 +126,21 @@ class sudo(
     default: { fail('no $ldap_enable is set') }
   }
 
+  case $global_syntax_check {
+    'check',true: {
+      $globalcheck=true
+      $globaldelete=false
+    }
+    'delete': {
+      $globalcheck=false
+      $globaldelete=true
+    }
+    'none',false: {
+      $globalcheck=false
+      $globaldelete=false
+    }
+    default: { fail ('$global_syntax check can be check/delete/none/true/false') }
+  }
 
   class { '::sudo::package':
     package            => $package_real,

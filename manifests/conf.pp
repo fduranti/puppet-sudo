@@ -100,25 +100,39 @@ define sudo::conf(
   }
 
   if $ensure == 'present' {
-    $notify_real = Exec["sudo-syntax-check for file ${cur_file}"]
+    $validate_cmd_real = 'visudo -c -f %'
+    if $sudo::globaldelete {
+      $notify_real = Exec["sudo-syntax-check for file ${cur_file}"]
+      $delete_cmd = "( rm -f '${cur_file_real}' && exit 1)"
+    } elsif $sudo::globalcheck {
+      $notify_real = Exec["sudo-syntax-check for file ${cur_file}"]
+      $delete_cmd = "( echo 'Error on global-syntax-check with file ${cur_file_real}' && exit 1)"
+    } else {
+      $notify_real = undef
+      $delete_cmd = ''
+    }
   } else {
+    $delete_cmd = ''
     $notify_real = undef
-  }
-
-  file { "${priority_real}_${dname}":
-    ensure  => $ensure,
-    path    => $cur_file_real,
-    owner   => 'root',
-    group   => $sudo::params::config_file_group,
-    mode    => '0440',
-    source  => $source,
-    content => $content_real,
-    notify  => $notify_real,
+    $validate_cmd_real = undef
   }
 
   exec {"sudo-syntax-check for file ${cur_file}":
-    command     => "visudo -c -f '${cur_file_real}' || ( rm -f '${cur_file_real}' && exit 1)",
+    command     => "visudo -c || ${delete_cmd}",
     refreshonly => true,
     path        => $sudo_syntax_path,
   }
+
+  file { "${priority_real}_${dname}":
+    ensure       => $ensure,
+    path         => $cur_file_real,
+    owner        => 'root',
+    group        => $sudo::params::config_file_group,
+    mode         => '0440',
+    source       => $source,
+    content      => $content_real,
+    notify       => $notify_real,
+    validate_cmd => $validate_cmd_real,
+  }
+
 }
