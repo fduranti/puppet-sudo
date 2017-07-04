@@ -109,10 +109,10 @@ define sudo::conf(
       $delete_cmd = "( echo 'Error on global-syntax-check with file ${cur_file_real}' && exit 1)"
     } else {
       $notify_real = undef
-      $delete_cmd = ''
+      $delete_cmd = '( exit 0)'
     }
   } else {
-    $delete_cmd = ''
+    $delete_cmd = '( exit 0)'
     $notify_real = undef
     $validate_cmd_real = undef
   }
