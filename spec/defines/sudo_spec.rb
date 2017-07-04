@@ -124,7 +124,7 @@ describe 'sudo::conf', :type => :define do
 
     it do
       is_expected.to contain_exec("sudo-syntax-check for file #{params[:sudo_config_dir]}/0#{params[:priority]}_#{title}").with(
-        command:     "visudo -c || ( echo 'Error on global-syntax-check with file '#{file_path}' && exit 1)",
+        command:     "visudo -c || ( echo 'Error on global-syntax-check with file #{file_path}' && exit 1)",
         refreshonly: 'true'
       )
     end
